@@ -1,11 +1,30 @@
+import sys
+if sys.implementation.name == "micropython":
+    __is_micropython__ = True
+else:
+    __is_micropython__ = False
+
+
 import socket
 import re
 import threading
 import inspect
 import datetime
-import importlib
 import os
 import struct
+
+
+if __is_micropython__:
+    import serial
+
+    class importlib:
+        @staticmethod
+        def import_module(_):
+            return serial
+
+    os.linesep = '\n'
+else:
+    import importlib
 
 
 class Secs2BodyParseError(Exception):
