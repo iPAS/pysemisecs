@@ -140,6 +140,11 @@ test_cases = [
 ]
 
 
+## Error occur ##
+def error_occur(error, comm: comm_type):
+    print(error)
+
+
 ## Test cases runner ##
 def run_tests(argv):
     print('[Host] argv:', argv)
@@ -170,6 +175,8 @@ def run_tests(argv):
     # secs1p.open()
     # Underlying comm. layer waiting is required.
     secs1p.open_and_wait_until_communicating(timeout=3)
+
+    secs1p.add_error_listener(error_occur)
 
     for test_name, test_func, test_desc in test_cases:
         print('\n')

@@ -15,6 +15,17 @@ from micropython import const
 FIONREAD = const(0x541b)
 F_GETFD = const(1)
 
+PARITY_NONE, PARITY_EVEN, PARITY_ODD, PARITY_MARK, PARITY_SPACE = 'N', 'E', 'O', 'M', 'S'
+STOPBITS_ONE, STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO = (1, 1.5, 2)
+FIVEBITS, SIXBITS, SEVENBITS, EIGHTBITS = (5, 6, 7, 8)
+
+PARITY_NAMES = {
+    PARITY_NONE: 'None',
+    PARITY_EVEN: 'Even',
+    PARITY_ODD: 'Odd',
+    PARITY_MARK: 'Mark',
+    PARITY_SPACE: 'Space',
+}
 
 class Serial:
 
@@ -26,11 +37,19 @@ class Serial:
         115200: termios.B115200
     }
 
-    def __init__(self, port, baudrate, timeout=None, **kwargs):
+    def __init__(self,
+                 port=None,
+                 baudrate=9600,
+                 bytesize=EIGHTBITS,
+                 parity=PARITY_NONE,
+                 stopbits=STOPBITS_ONE,
+                 timeout=None,
+                 **kwargs):
         self.port = port
         self.baudrate = baudrate
         self.timeout = -1 if timeout is None else timeout * 1000
-        self.open()
+        if port is not None:
+            self.open()
 
     def open(self):
         self.fd = os.open(self.port, os.O_RDWR | os.O_NOCTTY)

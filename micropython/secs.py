@@ -1,6 +1,13 @@
+import os
 import sys
 if sys.implementation.name == "micropython":
     __is_micropython__ = True
+    os.linesep = '\n'
+    import serial
+    class importlib:
+        @staticmethod
+        def import_module(_):
+            return serial
 else:
     __is_micropython__ = False
 
@@ -8,23 +15,9 @@ else:
 import socket
 import re
 import threading
-import inspect
+# import inspect
 import datetime
-import os
 import struct
-
-
-if __is_micropython__:
-    import serial
-
-    class importlib:
-        @staticmethod
-        def import_module(_):
-            return serial
-
-    os.linesep = '\n'
-else:
-    import importlib
 
 
 class Secs2BodyParseError(Exception):
@@ -2322,8 +2315,9 @@ class AbstractSecsCommunicator:
 
     @staticmethod
     def _is_single_args_listener(listener):
-        n = len(inspect.signature(listener).parameters)
-        return n == 1
+        # n = len(inspect.signature(listener).parameters)
+        # return n == 1
+        return False  # Always more than 1 arg, e.g.: def error_occur(error, comm: comm_type)
 
     def add_recv_primary_msg_listener(self, listener):
         """Add receive-primary-message listener

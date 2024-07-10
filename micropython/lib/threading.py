@@ -23,16 +23,15 @@ class _Verbose(object):
 
 
 # Sophisticated helper functions
-
 _start_new_thread = _thread.start_new_thread
 _allocate_lock = _thread.allocate_lock
 _get_ident = _thread.get_ident
 
 def _time():
-    return ticks_ms() / 1000
+    return ticks_us() / 1000000.0
 
 def _sleep(s):
-    sleep_ms(int(s * 1000))
+    sleep_us(int(s * 1000000))
 
 
 # Synchronization classes
