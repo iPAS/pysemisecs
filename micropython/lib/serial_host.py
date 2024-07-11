@@ -142,7 +142,11 @@ test_cases = [
 
 ## Error occur ##
 def error_occur(error, comm: comm_type):
-    print(error)
+    print('error_occur()', error)
+
+
+def circuit_error_occur(error, comm: comm_type):
+    print('circuit_error_occur()', error)
 
 
 ## Test cases runner ##
@@ -177,6 +181,7 @@ def run_tests(argv):
     secs1p.open_and_wait_until_communicating(timeout=3)
 
     secs1p.add_error_listener(error_occur)
+    secs1p.add_secs1_circuit_error_msg_listener(circuit_error_occur)
 
     for test_name, test_func, test_desc in test_cases:
         print('\n')

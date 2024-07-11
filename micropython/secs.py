@@ -1613,6 +1613,7 @@ class AbstractQueuing:
 
     def put(self, value):
         with self._v_cdt:
+            print('[put] ', value)
             if value is not None and not self._is_terminated():
                 self._vv.append(value)
                 self._v_cdt.notify_all()
@@ -4030,6 +4031,7 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
         raise NotImplementedError()
 
     def _put_error(self, e):
+        print('_put_error:', e)
         self.__error_putter.put(e)
 
     def add_recv_block_listener(self, listener):
@@ -4318,6 +4320,8 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 bb, 0, 1,
                 self.timeout_t2)
 
+            # print(f'[__circuit_receiving] get len r:{r} bb:{bb}')
+
             if r <= 0:
                 self._send_bytes(self.__BYTES_NAK)
 
@@ -4346,6 +4350,8 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 r = self.__msg_and_bytes_queue.put_to_list(
                     bb, pos, m,
                     self.timeout_t1)
+
+                # print(f'[__circuit_receiving] get len r:{r} bb:{bb}')
 
                 if r <= 0:
                     self._send_bytes(self.__BYTES_NAK)
@@ -4376,6 +4382,7 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 return
 
             block = Secs1MessageBlock(bytes(bb))
+            print(f'[__circuit_receiving] get block {block} --> {self.__recv_blocks}')
 
             self.__recv_block_putter.put(block)
 
