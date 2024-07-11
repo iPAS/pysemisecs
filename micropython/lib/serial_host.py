@@ -131,12 +131,12 @@ def test_send_s18f13(comm: comm_type):
 test_cases = [
     ('S1F1', test_send_s1f1, 'Online Check'),
     ('S18F1', test_send_s18f1, 'Get Attributes'),
-    # ('S18F3', test_send_s18f3, 'Set Attributes'),
-    # ('S18F5', test_send_s18f5, 'Read Data'),
-    # ('S18F7', test_send_s18f7, 'Write Data'),
-    # ('S18F9', test_send_s18f9, 'Read ID'),
-    # ('S18F11', test_send_s18f11, 'Write ID'),
-    # ('S18F13', test_send_s18f13, 'Subsystem Command: Reset'),
+    ('S18F3', test_send_s18f3, 'Set Attributes'),
+    ('S18F5', test_send_s18f5, 'Read Data'),
+    ('S18F7', test_send_s18f7, 'Write Data'),
+    ('S18F9', test_send_s18f9, 'Read ID'),
+    ('S18F11', test_send_s18f11, 'Write ID'),
+    ('S18F13', test_send_s18f13, 'Subsystem Command: Reset'),
 ]
 
 

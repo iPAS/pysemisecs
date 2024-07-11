@@ -8,9 +8,11 @@ if sys.implementation.name == "micropython":
         @staticmethod
         def import_module(_):
             return serial
+    encode_ascii = lambda x: x.encode('ascii')
     decode_ascii = lambda x: x.decode('ascii')
 else:
     __is_micropython__ = False
+    encode_ascii = lambda x: x.encode(encoding='ascii')
     decode_ascii = lambda x: x.decode(encoding='ascii')
 
 
@@ -235,12 +237,12 @@ class Secs2AsciiBody(AbstractSecs2Body):
         if self._extended:
             s = self._value
             if type(s) is str:
-                s = s.encode(encoding='ascii')
+                s = encode_ascii(s)
             else:
                 s = bytes([c for c in s])
             return s
 
-        return self._value.encode(encoding='ascii')
+        return encode_ascii(self._value)
 
     @staticmethod
     def build(item_type, value):
@@ -593,7 +595,7 @@ class SmlParser:
     def _parse_body(cls, sml_str):
 
         def _is_ws(v):  # is_white_space
-            return (v.encode(encoding='ascii'))[0] <= 0x20
+            return encode_ascii(v)[0] <= 0x20
 
         def _seek_next(s, from_pos, *args):
             p = from_pos
@@ -1392,7 +1394,6 @@ class Secs1Message(SecsMessage):
             return v
 
         except Secs2BodyParseError as e:
-            print('+++ from_blocks()', e)
             raise Secs1MessageParseError(e)
 
 
@@ -1616,7 +1617,6 @@ class AbstractQueuing:
 
     def put(self, value):
         with self._v_cdt:
-            print('[put] ', value)
             if value is not None and not self._is_terminated():
                 self._vv.append(value)
                 self._v_cdt.notify_all()
@@ -4034,7 +4034,6 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
         raise NotImplementedError()
 
     def _put_error(self, e):
-        print('_put_error:', e)
         self.__error_putter.put(e)
 
     def add_recv_block_listener(self, listener):
@@ -4323,8 +4322,6 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 bb, 0, 1,
                 self.timeout_t2)
 
-            # print(f'[__circuit_receiving] get len r:{r} bb:{bb}')
-
             if r <= 0:
                 self._send_bytes(self.__BYTES_NAK)
 
@@ -4353,8 +4350,6 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 r = self.__msg_and_bytes_queue.put_to_list(
                     bb, pos, m,
                     self.timeout_t1)
-
-                # print(f'[__circuit_receiving] get len r:{r} bb:{bb}')
 
                 if r <= 0:
                     self._send_bytes(self.__BYTES_NAK)
@@ -4385,7 +4380,6 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                 return
 
             block = Secs1MessageBlock(bytes(bb))
-            print(f'[__circuit_receiving] get block {block} --> {self.__recv_blocks}')
 
             self.__recv_block_putter.put(block)
 
@@ -4428,7 +4422,6 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                     self.__recv_all_msg_putter.put(msg)
 
                 except Secs1MessageParseError as e:
-                    print('+++ __circuit_receiving()', e)
                     self._put_error(e)
 
                 finally:
