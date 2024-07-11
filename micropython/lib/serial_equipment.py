@@ -15,7 +15,8 @@ comm_type = secs.Secs1OnPySerialCommunicator
 ## Receive a message from the host ##
 def recv_primary_msg(primary_msg, comm: comm_type):
     print('\n[Equipment] received primary message from:')
-    print(json.dumps(eval(str(comm)), sort_keys=True, indent=4))
+    # print(json.dumps(eval(str(comm)), sort_keys=True, indent=4))
+    print(comm)
     print('[Equipment] primary message:')
     print(primary_msg)
 
@@ -179,6 +180,10 @@ def error_occur(error, comm: comm_type):
     print(error)
 
 
+def circuit_error_occur(error, comm: comm_type):
+    print('circuit_error_occur()', error)
+
+
 ## Service start ##
 def start_service(argv):
     print('[Equipment] argv:', argv)
@@ -212,6 +217,7 @@ def start_service(argv):
 
     secs1p.add_recv_primary_msg_listener(recv_primary_msg)
     secs1p.add_error_listener(error_occur)
+    secs1p.add_secs1_circuit_error_msg_listener(circuit_error_occur)
 
     print('[Equipment] wait for primary message...')
     sleep(300)
