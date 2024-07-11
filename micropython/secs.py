@@ -8,8 +8,10 @@ if sys.implementation.name == "micropython":
         @staticmethod
         def import_module(_):
             return serial
+    decode_ascii = lambda x: x.decode('ascii')
 else:
     __is_micropython__ = False
+    decode_ascii = lambda x: x.decode(encoding='ascii')
 
 
 import socket
@@ -493,10 +495,10 @@ class Secs2BodyBuilder:
             elif tt[0] == 'A':
                 if os.getenv('SECS_EXTENDED'):
                     v = bs[start_index:end_index]
-                    v = v.decode(encoding='ascii') if all([c <= 128 for c in v]) else bytes([c for c in v])
+                    v = decode_ascii(v) if all([c <= 128 for c in v]) else bytes([c for c in v])
                     return tt[5](tt, v), end_index
 
-                v = bs[start_index:end_index].decode(encoding='ascii')
+                v = decode_ascii(bs[start_index:end_index])
                 return tt[5](tt, v), end_index
 
             elif tt[0] == 'B':
@@ -689,7 +691,7 @@ class SmlParser:
                         if s[p_start + 1] not in ('X', 'x'):
                             raise Secs2BodySmlParseError("Ascii not accept 0xNN")
                         v, p = _seek_next(s, (p_start+2), '"', '>', _is_ws)
-                        vv.append(bytes([int(s[(p_start+2):p], 16)]).decode(encoding='ascii'))
+                        vv.append(decode_ascii(bytes([int(s[(p_start+2):p], 16)])))
 
                     else:
                         raise Secs2BodySmlParseError("Ascii not reach end")
@@ -1390,6 +1392,7 @@ class Secs1Message(SecsMessage):
             return v
 
         except Secs2BodyParseError as e:
+            print('+++ from_blocks()', e)
             raise Secs1MessageParseError(e)
 
 
@@ -4425,6 +4428,7 @@ class AbstractSecs1Communicator(AbstractSecsCommunicator):
                     self.__recv_all_msg_putter.put(msg)
 
                 except Secs1MessageParseError as e:
+                    print('+++ __circuit_receiving()', e)
                     self._put_error(e)
 
                 finally:
