@@ -27,8 +27,17 @@ Copy lib/*.py to ~/.micropython/lib
 
 ```python
 import micropython
-micropython.mem_info(1)
+micropython.mem_info()
+micropython.stack_use()
 
 import sys
 sys.implementation
+```
+
+To compile the firmware with ESP-IDF 5.1.2:
+
+```bash
+make -j$(nproc) submodules               V=1 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
+make -j$(nproc)                          V=1 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
+make -j$(nproc) deploy PORT=/dev/ttyUSB0 V=1 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
 ```
