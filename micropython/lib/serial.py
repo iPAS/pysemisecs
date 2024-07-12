@@ -8,19 +8,18 @@
 # Licensed under MIT license
 #
 import os
-import termios
 import struct
-import fcntl
 import select
 from micropython import const
 
 import machine
 import sys
-# if sys.implementation.name == 'micropython':
 if sys.platform != 'linux':
     __is_micropython_on_mcu__ = True
 else:
     __is_micropython_on_mcu__ = False
+    import termios
+    import fcntl
 
 FIONREAD = const(0x541b)
 F_GETFD = const(1)
@@ -39,14 +38,6 @@ PARITY_NAMES = {
 
 class Serial:
 
-    BAUD_MAP = {
-        9600: termios.B9600,
-        # From Linux asm-generic/termbits.h
-        19200: 14,
-        57600: termios.B57600,
-        115200: termios.B115200
-    }
-
     def __init__(self,
                  port=None,
                  baudrate=9600,
@@ -59,6 +50,12 @@ class Serial:
         self.baudrate = baudrate
         self.timeout = -1 if timeout is None else timeout * 1000
         self.fd = None
+        self.BAUD_MAP = None if __is_micropython_on_mcu__ else {
+            9600: termios.B9600,
+            # From Linux asm-generic/termbits.h
+            19200: 14,
+            57600: termios.B57600,
+            115200: termios.B115200,}
         if port is not None:
             self.open()
 
