@@ -331,7 +331,7 @@ class Thread(_Verbose):
         self.__name = str(name or _newname())
         self.__args = args
         self.__kwargs = kwargs
-        self._daemonic = self._set_daemon() if daemon is None else daemon
+        self.__daemonic = self._set_daemon() if daemon is None else daemon
         self.__started = 0
         self.__stopped = 0
         self.__block = Condition(Lock())
