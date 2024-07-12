@@ -24,3 +24,11 @@ $ ./install.sh  # Will copy *.sh to ~/.micropython/lib
 ## Ports/Unix
 
 Copy lib/*.py to ~/.micropython/lib
+
+```python
+import micropython
+micropython.mem_info(1)
+
+import sys
+sys.implementation
+```
