@@ -1,4 +1,6 @@
 #
+# For MicroPython-Unix port only
+#
 # serial - pySerial-like interface for Micropython
 # based on https://github.com/pfalcon/pycopy-serial
 #
@@ -7,10 +9,18 @@
 #
 import os
 import termios
-import ustruct
+import struct
 import fcntl
-import uselect
+import select
 from micropython import const
+
+import machine
+import sys
+# if sys.implementation.name == 'micropython':
+if sys.platform != 'linux':
+    __is_micropython_on_mcu__ = True
+else:
+    __is_micropython_on_mcu__ = False
 
 FIONREAD = const(0x541b)
 F_GETFD = const(1)
@@ -48,38 +58,68 @@ class Serial:
         self.port = port
         self.baudrate = baudrate
         self.timeout = -1 if timeout is None else timeout * 1000
+        self.fd = None
         if port is not None:
             self.open()
 
     def open(self):
+        if __is_micropython_on_mcu__:
+            self.fd = machine.UART(1, baudrate=self.baudrate, tx=33, rx=32)
+            # self.fd.init(baudrate=self.baudrate, tx=33, rx=32)
+            self.poller = select.poll()
+            self.poller.register(self.fd, select.POLLIN | select.POLLHUP)
+            return
+
         self.fd = os.open(self.port, os.O_RDWR | os.O_NOCTTY)
         termios.setraw(self.fd)
-        iflag, oflag, cflag, lflag, ispeed, ospeed, cc = termios.tcgetattr(
-            self.fd)
+        iflag, oflag, cflag, lflag, ispeed, ospeed, cc = termios.tcgetattr(self.fd)
         baudrate = self.BAUD_MAP[self.baudrate]
-        termios.tcsetattr(self.fd, termios.TCSANOW,
+        termios.tcsetattr(self.fd,
+                          termios.TCSANOW,
                           [iflag, oflag, cflag, lflag, baudrate, baudrate, cc])
-        self.poller = uselect.poll()
-        self.poller.register(self.fd, uselect.POLLIN | uselect.POLLHUP)
+        self.poller = select.poll()
+        self.poller.register(self.fd, select.POLLIN | select.POLLHUP)
 
     def close(self):
+        if __is_micropython_on_mcu__:
+            if self.fd:
+                self.fd.deinit()
+            self.fd = None
+            return
+
         if self.fd:
             os.close(self.fd)
         self.fd = None
 
+    # Example for @property
+    # https://www.geeksforgeeks.org/python-property-function/
+
     @property
     def in_waiting(self):
-        """Can throw an OSError or TypeError"""
-        buf = ustruct.pack('I', 0)
+        '''
+        Return number of bytes in input buffer.
+
+        Can throw an OSError or TypeError'''
+        if __is_micropython_on_mcu__:
+            return self.fd.any() if self.fd else 0;
+
+        buf = struct.pack('I', 0)
         fcntl.ioctl(self.fd, FIONREAD, buf, True)
-        return ustruct.unpack('I', buf)[0]
+        return struct.unpack('I', buf)[0]
 
     @property
     def is_open(self):
-        """Can throw an OSError or TypeError"""
+        '''Can throw an OSError or TypeError'''
+        if __is_micropython_on_mcu__:
+            return self.fd is not None
         return fcntl.fcntl(self.fd, F_GETFD) == 0
 
     def write(self, data):
+        if __is_micropython_on_mcu__:
+            if self.fd:
+                self.fd.write(data)
+            return
+
         if self.fd:
             os.write(self.fd, data)
 
@@ -88,7 +128,7 @@ class Serial:
         while self.fd and size > 0:
             if not self.poller.poll(self.timeout):
                 break
-            chunk = os.read(self.fd, size)
+            chunk = self.fd.read(size) if __is_micropython_on_mcu__ else os.read(self.fd, size)
             l = len(chunk)
             if l == 0:  # port has disappeared
                 self.close()
