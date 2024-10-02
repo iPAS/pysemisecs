@@ -5,11 +5,12 @@ def _install_requires(filename):
 
 setuptools.setup(
     name="pysemisecs",
-    version="0.5.0",
+    version="0.5.1",
     license="Apache-2.0",
     author="kenta-shimizu",
     description="This package is SEMI-SECS-communicate implementation on Python3.",
-    url="https://github.com/kenta-shimizu/pysemisecs",
+    #url="https://github.com/kenta-shimizu/pysemisecs",
+    url="https://github.com/iPAS/pysemisecs.git",
     packages=setuptools.find_packages(),
     zip_safe=False,
     install_requires=_install_requires('./requirements.txt')
